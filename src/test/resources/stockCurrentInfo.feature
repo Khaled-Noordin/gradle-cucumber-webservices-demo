@@ -1,3 +1,4 @@
+#language: EN
 Feature: Get Stock Current Information
   In order to enable traders to make informed decisions
   Web service clients must be able to send a stock symbol and get back the correct current information

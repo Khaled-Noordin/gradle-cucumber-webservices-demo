@@ -1,75 +1,84 @@
-apply plugin: 'java'
-apply plugin: 'war'
-apply plugin: 'idea'
-apply plugin: 'groovy'
-apply plugin: 'tomcat'
+apply plugin: "java"
+apply plugin: "war"
+apply plugin: "idea"
+apply plugin: "groovy"
+apply plugin: "tomcat"
 
-def tomcatVersion = '6.0.29'
-
+def tomcatVersion = '7.0.11'
+def springVersion = "3.2.4.RELEASE"
+def junitVersion = "4.11"
+def cucumberVersion = "1.0.7"//"1.1.5"//
+def groovyVersion = "2.1.9"
 // This build script retrieves the tomcat plugin because it is not an "official" gradle plugin
 buildscript {
     repositories {
         add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-            name = 'GitHub'
-            addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
+            name = "GitHub"
+            addArtifactPattern "http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]"
         }
     }
 
     dependencies {
-        classpath 'bmuschko:gradle-tomcat-plugin:0.9.2'
+        classpath "bmuschko:gradle-tomcat-plugin:0.9.2"
     }
 }
 
 // This build script retrieves the cucumber plugin for gradle
 buildscript {
-    apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.1/cucumberinit.gradle'
+    apply from: "https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.1/cucumberinit.gradle"
 }
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-group = 'com.excella.javacoe.demo'
-version = '1.0'
+group = "com.excella.javacoe.demo"
+version = "1.0"
 
 configurations {
-	jaxb
+    jaxb
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
-dependencies {	
-		jaxb group: 'com.sun.xml.bind', name: 'jaxb-xjc', version: '2.2.4-1'
-		
-		groovy 'org.codehaus.groovy:groovy:1.8.5'
-		
-		compile 'commons-lang:commons-lang:2.6',
-				'commons-beanutils:commons-beanutils:1.8.3',
-				'log4j:log4j:1.2.16',
-				'org.slf4j:slf4j-log4j12:1.6.1', 
-				'commons-logging:commons-logging:1.1.1',
-				'org.springframework:spring-context:3.1.0.RELEASE',
-				'org.springframework:spring-context:3.1.0.RELEASE',
-				'activesoap:jaxb-xercesImpl:1.5',
-				'xerces:xmlParserAPIs:2.6.2',
-				'xerces:xercesImpl:2.6.2',
-				'org.springframework.ws:spring-ws-core:2.0.2.RELEASE'
+dependencies {
+    jaxb group: "com.sun.xml.bind", name: "jaxb-xjc", version: "2.2.4-1"
 
-		testCompile 'junit:junit:4.10',
-					'org.springframework:spring-test:3.1.0.RELEASE',
-					'info.cukes:cucumber-junit:1.0.7',
-					'info.cukes:cucumber-groovy:1.0.7',
-					'com.github.groovy-wslite:groovy-wslite:0.7.0'
-					
-		tomcat "org.apache.tomcat:catalina:$tomcatVersion",
-				"org.apache.tomcat:coyote:$tomcatVersion",
-				"org.apache.tomcat:jasper:$tomcatVersion",
-				"org.apache.tomcat:dbcp:$tomcatVersion"
+    groovy "org.codehaus.groovy:groovy-all:$groovyVersion"
 
-		cucumberRuntime files("${jar.archivePath}"),
-                        'info.cukes:cucumber-groovy:1.0.11'
-                
+    compile "commons-lang:commons-lang:2.6",
+            "commons-beanutils:commons-beanutils:1.8.3",
+            "log4j:log4j:1.2.16",
+            "org.slf4j:slf4j-log4j12:1.6.1",
+            "commons-logging:commons-logging:1.1.1",
+            "org.springframework:spring-context:$springVersion",
+            "org.springframework:spring-context-support:$springVersion",
+            "org.springframework:spring-oxm:$springVersion",
+            "org.springframework:spring-web:$springVersion",
+            "org.springframework:spring-webmvc:$springVersion",
+            "activesoap:jaxb-xercesImpl:1.5",
+            "xerces:xmlParserAPIs:2.6.2",
+            "xerces:xercesImpl:2.6.2",
+            "org.springframework.ws:spring-ws-core:2.1.3.RELEASE"
+
+    testCompile "junit:junit:$junitVersion",
+            "org.springframework:spring-test:$springVersion",
+            "info.cukes:cucumber-junit:$cucumberVersion",
+            "info.cukes:cucumber-groovy:$cucumberVersion",
+//            "'info.cukes:cucumber-spring:$cucumberVersion'",
+//            "info.cukes:spring-txn:$cucumberVersion",
+            "com.github.groovy-wslite:groovy-wslite:0.7.0"
+
+
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+            "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}"
+    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}") {
+        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
+    }
+
+    cucumberRuntime files("${jar.archivePath}"),
+            "info.cukes:cucumber-groovy:1.0.11"//$cucumberVersion"//
 }
 
 //Includes JAXB generated classes as a source directory
@@ -82,24 +91,24 @@ sourceSets {
 }
 
 //Generate JAXB bindings for the XSD used in the web service
-task jaxb () {
+task jaxb() {
     // output directory
-    def jaxbTargetDir = file( "${buildDir}/generated-sources" )
+    def jaxbTargetDir = file("${buildDir}/generated-sources")
 
     // perform actions
     doLast {
         jaxbTargetDir.mkdirs()
 
         // Ant XJC Task
-        ant{
-				taskdef(name: 'xjc', classname: 'com.sun.tools.xjc.XJCTask', classpath: configurations.jaxb.asPath)
-                
-				xjc(destdir: "${jaxbTargetDir}", 
-					package: 'com.excella.javacoe.demo.jaxb', 
-					binding: 'src/main/resources/jaxb/jaxb-bindings.xml',
-					extension: true) {
-					schema(dir:'src/main/resources/xsd', includes: 'schema.xsd')
-				}
+        ant {
+            taskdef(name: "xjc", classname: "com.sun.tools.xjc.XJCTask", classpath: configurations.jaxb.asPath)
+
+            xjc(destdir: "${jaxbTargetDir}",
+                    package: "com.excella.javacoe.demo.jaxb",
+                    binding: "src/main/resources/jaxb/jaxb-bindings.xml",
+                    extension: true) {
+                schema(dir: "src/main/resources/xsd", includes: "schema.xsd")
+            }
         }
 
     }
@@ -110,14 +119,14 @@ compileJava.dependsOn jaxb
 
 //Cucumber execution
 cucumber() {
-    glueDirs = ['src/test/groovy', 'src/test/resources']
-    formats = ['json:build/cucumber.json','junit:build/cucumber.xml','pretty']
+    glueDirs = ["src/test/groovy", "src/test/resources"]
+    formats = ["json:build/cucumber.json", "junit:build/cucumber.xml", "pretty"]
 }
 
 //Set the tomcat options
-[tomcatRun, tomcatRunWar]*.contextPath = 'stock-webservice'
+[tomcatRun, tomcatRunWar]*.contextPath = "stock-webservice"
 [tomcatRun, tomcatRunWar, tomcatStop]*.stopPort = 8081
-[tomcatRun, tomcatRunWar, tomcatStop]*.stopKey = 'stopKey'
+[tomcatRun, tomcatRunWar, tomcatStop]*.stopKey = "stopKey"
 
 task acceptanceTests() {
     dependsOn assemble
@@ -140,5 +149,5 @@ war {
 
 //Creates the Gradle Wrapper so that gradle installation is not necessary to run this script
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0'
+    gradleVersion = "1.0"
 }
