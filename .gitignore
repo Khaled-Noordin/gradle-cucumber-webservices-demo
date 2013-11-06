@@ -22,3 +22,6 @@ atlassian-ide-plugin.xml
 
 #tomcat files
 */context.xml
+/.nb-gradle/*
+
+/gradle/*

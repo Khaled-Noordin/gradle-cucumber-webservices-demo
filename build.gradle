@@ -25,7 +25,7 @@ buildscript {
     apply from: 'https://github.com/samueltbrown/gradle-cucumber-plugin/raw/master/repo/gradle-cucumber-plugin/gradle-cucumber-plugin/0.1/cucumberinit.gradle'
 }
 
-sourceCompatibility = 1.6
+sourceCompatibility = 1.7
 group = 'com.excella.javacoe.demo'
 version = '1.0'
 
